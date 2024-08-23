@@ -89,11 +89,17 @@ router.get("/getuserdetails", fetchUser, async (req, res) => {
 
 
 
-router.post("/:code/rewarduser", async (req, res) => {
+router.post("/:userid/rewarduser/:refcode", async (req, res) => {
   try {
-    const user = await User.findOne({ referralCode: req.params.code });
+    const user = await User.findOne({ referralCode: req.params.refcode });
     if (!user) {
       return res.status(400).send({ message: "Invalid Referral Code" });
+    }
+
+    //fetch the details of the registered user
+    const registeredUser = await User.findOne({ _id: req.params.userid });
+    if (!registeredUser) {
+      return res.status(400).send({ message: "Registered user not found" });
     }
 
     let noOfReferrals = user.numReferrals + 1;
@@ -102,6 +108,13 @@ router.post("/:code/rewarduser", async (req, res) => {
       numReferrals: noOfReferrals,
       rewardsEarned: reward
     });
+
+    const referral = {
+      email: registeredUser.email,
+      referralDate: new Date(Date.now())
+    }
+    user.referrals.push(referral);
+    await user.save();
 
     console.log("Rewards updated");
     res.status(200).send({ message: "User Rewarded" });

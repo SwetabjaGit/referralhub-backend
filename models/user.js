@@ -45,8 +45,8 @@ const userSchema = new mongoose.Schema({
     default: 0
   },
   referrals: {
-    type: Object,
-    required: false
+    type: Array,
+    default: []
   },
   createdAt: {
     type: Date,
